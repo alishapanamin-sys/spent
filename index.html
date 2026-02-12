@@ -2,656 +2,463 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spin & Check Eligibility</title>
-  <meta name="robots" content="noindex,nofollow" />
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spin & Unlock Your Reward</title>
+  <meta name="description" content="Spin the wheel to unlock a reward and continue." />
   <style>
     :root{
-      --bg1:#0b1020; --bg2:#121a33;
-      --card:#0f1730cc;
-      --text:#e9edff; --muted:#b9c0ffcc;
-      --accent:#7c5cff; --accent2:#29d3ff;
-      --danger:#ff4d6d; --ok:#3cffb5;
-      --btn:#7c5cff;
+      --bg:#0b0f19;
+      --muted:#9ca3af;
+      --text:#f9fafb;
+      --accent:#f59e0b;
+      --accent2:#22c55e;
+      --danger:#ef4444;
       --shadow: 0 20px 60px rgba(0,0,0,.45);
-      --radius: 18px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      min-height:100vh;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(245,158,11,.18), transparent 55%),
+                  radial-gradient(900px 700px at 90% 20%, rgba(34,197,94,.14), transparent 50%),
+                  radial-gradient(800px 700px at 30% 95%, rgba(239,68,68,.12), transparent 45%),
+                  var(--bg);
       color:var(--text);
-      background: radial-gradient(1200px 700px at 20% 10%, #22306a 0%, transparent 55%),
-                  radial-gradient(900px 600px at 80% 30%, #1a5b7a 0%, transparent 60%),
-                  linear-gradient(180deg, var(--bg1), var(--bg2));
-      display:flex; align-items:center; justify-content:center;
-      padding:20px;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
     }
-    .wrap{
-      width:min(980px, 100%);
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:18px;
-    }
-    @media (max-width: 880px){ .wrap{grid-template-columns:1fr} }
+    .wrap{width:min(980px, 100%); display:grid; gap:18px; grid-template-columns: 1.05fr .95fr}
+    @media (max-width: 920px){ .wrap{grid-template-columns: 1fr; } }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
       box-shadow: var(--shadow);
       overflow:hidden;
-      position:relative;
     }
-    .card .pad{ padding:18px 18px 16px; }
-
-    .top{
-      display:flex; align-items:flex-start; justify-content:space-between;
-      gap:12px;
-    }
-    h1{
-      margin:0;
-      font-size: 24px;
-      line-height:1.2;
-      letter-spacing:.2px;
-    }
-    .sub{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.4;
-    }
+    .card .pad{padding:18px 18px 16px}
+    h1{margin:0 0 8px; font-size:28px; letter-spacing:.2px}
+    p{margin:0; color:var(--muted); line-height:1.5}
     .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color:rgba(255,255,255,.9);
       font-size:12px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(124,92,255,.14);
-      color: #eae6ff;
-      white-space:nowrap;
-      align-self:flex-start;
     }
 
-    /* Wheel */
-    .wheelArea{
-      display:grid;
-      place-items:center;
-      padding: 18px;
+    .wheel-area{
       position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
     }
-    .wheelWrap{
-      width:min(420px, 92vw);
-      aspect-ratio:1/1;
-      position:relative;
-      display:grid;
-      place-items:center;
-    }
-    .wheel{
-      width:100%;
-      height:100%;
+    canvas{
+      width:min(430px, 92vw);
+      height:min(430px, 92vw);
+      max-width:430px;
+      max-height:430px;
       border-radius:50%;
-      border: 10px solid rgba(255,255,255,.14);
-      box-shadow: 0 18px 60px rgba(0,0,0,.45);
-      background:
-        conic-gradient(
-          #7c5cff 0 45deg,
-          #29d3ff 45deg 90deg,
-          #3cffb5 90deg 135deg,
-          #ffcc00 135deg 180deg,
-          #ff4d6d 180deg 225deg,
-          #a66bff 225deg 270deg,
-          #28e0a9 270deg 315deg,
-          #4ea1ff 315deg 360deg
-        );
-      transform: rotate(0deg);
-      transition: transform 4.2s cubic-bezier(.12,.72,.10,1);
-      position:relative;
-      overflow:hidden;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.5));
     }
-    .wheel:before{
-      content:"";
-      position:absolute; inset:14%;
-      border-radius:50%;
-      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.18), rgba(255,255,255,.05) 55%, rgba(0,0,0,.12));
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .center{
-      position:absolute;
-      width:26%;
-      aspect-ratio:1/1;
-      border-radius:50%;
-      background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow: 0 10px 35px rgba(0,0,0,.35);
-      display:grid; place-items:center;
-      text-align:center;
-      padding:10px;
-      backdrop-filter: blur(6px);
-    }
-    .center b{font-size:12px; display:block}
-    .center span{font-size:11px; color:var(--muted); display:block; margin-top:2px}
-
     .pointer{
       position:absolute;
-      top:-8px;
-      left:50%;
-      transform: translateX(-50%);
-      width:0; height:0;
-      border-left: 16px solid transparent;
-      border-right: 16px solid transparent;
-      border-bottom: 30px solid rgba(255,255,255,.92);
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.45));
-      z-index:5;
+      top:12px;
+      width:0;height:0;
+      border-left:16px solid transparent;
+      border-right:16px solid transparent;
+      border-top:28px solid var(--accent);
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,.55));
     }
-    .labels{
+    .hub{
       position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      pointer-events:none;
-      opacity:.92;
-    }
-    .labels span{
-      position:absolute;
-      font-size:12px;
-      font-weight:700;
-      text-shadow: 0 2px 10px rgba(0,0,0,.55);
-      letter-spacing:.3px;
+      width:94px; height:94px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,.08) 40%, rgba(0,0,0,.35) 72%),
+                  linear-gradient(180deg, rgba(245,158,11,.85), rgba(245,158,11,.35));
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 14px 28px rgba(0,0,0,.5);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      color:#111827;
       user-select:none;
     }
-    /* 8 labels around */
-    .labels span:nth-child(1){ transform: rotate(0deg) translateY(-185px) rotate(0deg); }
-    .labels span:nth-child(2){ transform: rotate(45deg) translateY(-185px) rotate(-45deg); }
-    .labels span:nth-child(3){ transform: rotate(90deg) translateY(-185px) rotate(-90deg); }
-    .labels span:nth-child(4){ transform: rotate(135deg) translateY(-185px) rotate(-135deg); }
-    .labels span:nth-child(5){ transform: rotate(180deg) translateY(-185px) rotate(-180deg); }
-    .labels span:nth-child(6){ transform: rotate(225deg) translateY(-185px) rotate(-225deg); }
-    .labels span:nth-child(7){ transform: rotate(270deg) translateY(-185px) rotate(-270deg); }
-    .labels span:nth-child(8){ transform: rotate(315deg) translateY(-185px) rotate(-315deg); }
 
-    .controls{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      margin-top:14px;
-      flex-wrap:wrap;
-    }
-    .btn{
-      appearance:none;
-      border:0;
-      cursor:pointer;
-      background: linear-gradient(90deg, var(--btn), #5bb7ff);
-      color:white;
-      font-weight:800;
-      padding:12px 16px;
+    .controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    button{
+      appearance:none; border:0;
       border-radius:14px;
-      box-shadow: 0 12px 30px rgba(124,92,255,.35);
-      transition: transform .08s ease, opacity .2s ease;
-      min-width: 160px;
-    }
-    .btn:active{ transform: translateY(1px) scale(.99); }
-    .btn[disabled]{ opacity:.55; cursor:not-allowed; }
-    .btn.secondary{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow:none;
+      padding:12px 14px;
       font-weight:700;
-      min-width: 120px;
+      cursor:pointer;
+      transition: transform .08s ease, filter .2s ease, background .2s ease;
+      color:#0b0f19;
+      background: linear-gradient(180deg, rgba(245,158,11,.98), rgba(245,158,11,.75));
+    }
+    button:active{transform: scale(.98)}
+    button[disabled]{cursor:not-allowed; filter:saturate(.2) opacity(.7)}
+    .ghost{
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
     }
 
-    .side{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    .result{
+      margin-top:14px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:none;
     }
-    .box{
-      padding:16px;
-      border-radius: var(--radius);
+    .result.show{display:block}
+    .result h2{margin:0 0 6px; font-size:18px}
+    .result .msg{color:rgba(255,255,255,.92)}
+    .cta{margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    a.cta-btn{
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px 14px;
+      border-radius:14px;
+      font-weight:800;
+      color:#052e16;
+      background: linear-gradient(180deg, rgba(34,197,94,.95), rgba(34,197,94,.72));
+    }
+    .fine{margin-top:14px; font-size:12px; color: rgba(255,255,255,.65); line-height:1.45}
+
+    .list{margin-top:10px; display:grid; gap:10px}
+    .item{
       border:1px solid rgba(255,255,255,.10);
-      background: rgba(15,23,48,.55);
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
-    }
-    .box h2{
-      margin:0 0 8px;
-      font-size:16px;
-      letter-spacing:.2px;
-    }
-    .steps{
-      margin:0;
-      padding-left:18px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
-    }
-    .status{
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
       display:flex;
       gap:10px;
       align-items:flex-start;
-      padding:12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
+    }
+    .dot{width:10px; height:10px; border-radius:50%; margin-top:6px; background: var(--accent); flex:0 0 auto}
+    .item b{display:block; margin-bottom:3px}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
       margin-top:10px;
+      color:rgba(255,255,255,.85);
     }
-    .dot{
-      width:10px; height:10px; border-radius:50%;
-      background: rgba(255,255,255,.35);
-      margin-top:4px;
-      box-shadow: 0 0 0 4px rgba(255,255,255,.06);
-    }
-    .status b{ display:block; margin-bottom:4px; }
-    .status p{ margin:0; color:var(--muted); font-size:13px; line-height:1.4; }
-
-    .cta{
-      display:none;
-      margin-top:12px;
-      padding:14px;
-      border-radius: var(--radius);
-      border:1px solid rgba(60,255,181,.20);
-      background: rgba(60,255,181,.10);
-    }
-    .cta .title{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    .cta small{ color: rgba(233,237,255,.80); display:block; margin-top:6px; line-height:1.45 }
-    .cta .btn{ width:100%; margin-top:10px; }
-
-    .fineprint{
-      margin-top:12px;
-      font-size:12px;
-      color: rgba(185,192,255,.80);
-      line-height:1.45;
-    }
-    .fineprint a{ color:#cfe1ff; text-decoration:underline; }
-
-    /* Tiny confetti */
-    .confetti{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      overflow:hidden;
-      display:none;
-    }
-    .confetti i{
-      position:absolute;
-      top:-10px;
-      width:10px; height:14px;
-      border-radius:2px;
-      opacity:.95;
-      animation: fall 1.25s linear forwards;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
-    }
-    @keyframes fall{
-      to{ transform: translateY(110vh) rotate(240deg); opacity:1; }
-    }
-
-    .footer{
-      padding:14px 18px 16px;
-      border-top:1px solid rgba(255,255,255,.08);
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      gap:10px;
-      color: rgba(185,192,255,.80);
-      font-size:12px;
-    }
-    .footer .links{ display:flex; gap:12px; flex-wrap:wrap; }
-    .footer a{ color: rgba(233,237,255,.90); text-decoration:none; opacity:.9 }
-    .footer a:hover{ text-decoration:underline; }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-
-    <!-- LEFT: Wheel -->
+    <!-- LEFT -->
     <section class="card">
       <div class="pad">
-        <div class="top">
-          <div>
-            <h1>Spin & Check Eligibility</h1>
-            <p class="sub">
-              Spin the wheel to reveal a <b>reward opportunity</b>. Results may vary and eligibility checks may apply.
-            </p>
-          </div>
-          <div class="pill">Not a guaranteed win</div>
-        </div>
+        <span class="pill">🎡 Spin & Unlock • Limited-time promotion</span>
+        <h1 style="margin-top:10px;">Spin the Wheel to Unlock Your Reward</h1>
+        <p>Tap <b>SPIN</b> once. Your result will appear below. Then continue to the offer page.</p>
       </div>
 
-      <div class="wheelArea">
-        <div class="wheelWrap">
-          <div class="pointer" aria-hidden="true"></div>
-          <div class="wheel" id="wheel" role="img" aria-label="Spin wheel">
-            <div class="labels" aria-hidden="true">
-              <span>TRY</span><span>CHECK</span><span>LUCK</span><span>REWARD</span>
-              <span>STATUS</span><span>SPIN</span><span>PLAY</span><span>GO</span>
-            </div>
-          </div>
-          <div class="center">
-            <div>
-              <b id="spinCountText">Spin 1 of 2</b>
-              <span id="hintText">Tap Spin to begin</span>
-            </div>
-          </div>
-        </div>
+      <div class="wheel-area">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" width="900" height="900" aria-label="Prize wheel"></canvas>
+        <div class="hub" aria-hidden="true">SPIN</div>
+      </div>
 
+      <div class="pad">
         <div class="controls">
-          <button class="btn" id="spinBtn">Spin</button>
-          <button class="btn secondary" id="resetBtn" disabled>Reset</button>
+          <button id="spinBtn">SPIN</button>
+          <button id="resetBtn" class="ghost" disabled>Reset</button>
         </div>
 
-        <div class="confetti" id="confetti"></div>
-      </div>
+        <div id="result" class="result" role="status" aria-live="polite">
+          <h2 id="resultTitle">Result</h2>
+          <div class="msg" id="resultMsg"></div>
 
-      <div class="footer">
-        <div>© <span id="year"></span> Reward Status Check</div>
-        <div class="links">
-          <a href="#" onclick="openModal('terms');return false;">Terms</a>
-          <a href="#" onclick="openModal('privacy');return false;">Privacy</a>
-          <a href="#" onclick="openModal('contact');return false;">Contact</a>
+          <div class="cta" id="ctaRow" style="display:none;">
+            <a class="cta-btn" id="continueBtn" href="#" rel="nofollow noopener">Continue</a>
+            <button class="ghost" id="spinAgainBtn" type="button">Spin Again</button>
+          </div>
+
+          <div class="fine" id="finePrint">
+            This is a promotional game. Rewards may include a chance to win selected items. Odds vary. Availability and eligibility may depend on location and the offer’s terms.
+          </div>
+        </div>
+
+        <div class="fine">
+          Tip: Put your tracking params in the URL (subid/clickid/utm_*). The page will pass them to the Smartlink automatically.
         </div>
       </div>
     </section>
 
-    <!-- RIGHT: Copy / Status -->
-    <aside class="side">
-      <div class="box">
-        <h2>How it works</h2>
-        <ol class="steps">
-          <li>Spin the wheel (2 spins total).</li>
-          <li>After the second spin, you may unlock a reward opportunity.</li>
-          <li>Continue to check eligibility and complete the next step.</li>
-        </ol>
+    <!-- RIGHT -->
+    <aside class="card">
+      <div class="pad">
+        <span class="pill">✅ Smartlink Ready • GitHub Pages</span>
+        <h1 style="margin-top:10px; font-size:22px;">What users can unlock</h1>
+        <p>After the spin, users tap <b>Continue</b> to proceed to your Monetizer Smartlink.</p>
 
-        <div class="status" id="statusBox">
-          <div class="dot" id="statusDot"></div>
-          <div>
-            <b id="statusTitle">Status: Ready</b>
-            <p id="statusText">No claim of guaranteed winnings. This is an opportunity check.</p>
+        <div class="list">
+          <div class="item">
+            <span class="dot"></span>
+            <div>
+              <b>High-value prizes (Chance to win)</b>
+              iPhone 17 • Top-tier iPad • Samsung Ultra (Top model)
+            </div>
+          </div>
+          <div class="item">
+            <span class="dot" style="background:var(--accent2);"></span>
+            <div>
+              <b>Instant reward</b>
+              Gift Card reward (offer-dependent)
+            </div>
+          </div>
+          <div class="item">
+            <span class="dot" style="background:var(--danger);"></span>
+            <div>
+              <b>Non-winning outcomes</b>
+              “No prize” and “Good luck next time”
+            </div>
           </div>
         </div>
 
-        <div class="cta" id="ctaBox">
-          <div class="title">🎉 You unlocked a reward opportunity</div>
-          <small>
-            Congratulations! <b>You may be eligible to proceed</b>. Tap Continue to complete the eligibility step.
-          </small>
-          <button class="btn" id="continueBtn">Continue</button>
-          <div class="fineprint">
-            By continuing, you confirm you are 18+ and agree to our Terms & Privacy.
-          </div>
-        </div>
+        <div class="badge">⚙️ You can change prizes/odds in the JS list</div>
 
-        <div class="fineprint">
-          <b>Disclosure:</b> Participation does not guarantee a reward. Availability, eligibility, and completion steps may be required.
-          This page is not affiliated with Facebook or any brand. Results may vary.
-        </div>
-      </div>
-
-      <div class="box">
-        <h2>Safe ad copy examples</h2>
-        <div class="fineprint" style="margin-top:0">
-          ✅ “Try Your Luck & Check Your Reward Status”<br/>
-          ✅ “Congratulations! You may be eligible to proceed.”<br/>
-          ✅ “You unlocked a reward opportunity.”<br/>
-          ❌ تجنّب: “Win Guaranteed / You Won / Claim iPhone Now”
+        <div class="fine" style="margin-top:12px;">
+          Keep your disclaimer visible to reduce rejections and improve lead quality.
         </div>
       </div>
     </aside>
   </div>
 
-  <!-- Simple modal -->
-  <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); padding:18px; z-index:50;">
-    <div style="max-width:720px; margin:6vh auto; background:rgba(15,23,48,.95); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.55); overflow:hidden;">
-      <div style="display:flex; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.10); align-items:center;">
-        <b id="modalTitle">Info</b>
-        <button class="btn secondary" style="min-width:auto; padding:8px 10px; border-radius:12px;" onclick="closeModal()">Close</button>
-      </div>
-      <div id="modalBody" style="padding:14px 16px; color:rgba(233,237,255,.90); line-height:1.6; font-size:13px;"></div>
-    </div>
-  </div>
+<script>
+(() => {
+  // ✅ Put your Monetizer Smartlink here:
+  const SMARTLINK = "https://iconics.adsleads1.store/?utm_medium=24c9e8ead1a61abc4ca11515604da84dbebe69ba&utm_campaign=spent";
 
-  <script>
-    /***********************
-     * CONFIG (edit these)
-     ***********************/
-    // Put your CPA link here:
-    const CPA_URL = "https://iconics.adsleads1.store/?utm_medium=24c9e8ead1a61abc4ca11515604da84dbebe69ba&utm_campaign=spent";
+  function getParam(name){
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
+  }
 
-    // Optional: add query passthrough to CPA (e.g. ?utm_source=...):
-    const PASS_THROUGH_QUERY = true;
+  // ✅ Updated segments (Your request):
+  // - 1x Good Luck
+  // - 1x Congrats iPhone 17
+  // - 1x Congrats Top iPad
+  // - 1x Congrats Samsung Ultra
+  // - 1x Congrats Gift Card
+  // - 2x No Prize
+  // (Compliant phrasing: "chance to win")
+  const segments = [
+    { label: "GOOD LUCK NEXT TIME", kind:"luck", weight: 1 },
 
-    // Spins required:
-    const REQUIRED_SPINS = 2;
+    { label: "CONGRATS! YOU UNLOCKED A CHANCE TO WIN IPHONE 17", kind:"win",  weight: 1 },
+    { label: "CONGRATS! YOU UNLOCKED A CHANCE TO WIN TOP-TIER IPAD", kind:"win",  weight: 1 },
+    { label: "CONGRATS! YOU UNLOCKED A CHANCE TO WIN SAMSUNG ULTRA (TOP MODEL)", kind:"win",  weight: 1 },
+    { label: "CONGRATS! YOU UNLOCKED A GIFT CARD REWARD", kind:"win",  weight: 1 },
 
-    /***********************
-     * State
-     ***********************/
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const continueBtn = document.getElementById("continueBtn");
-    const spinCountText = document.getElementById("spinCountText");
-    const hintText = document.getElementById("hintText");
-    const statusTitle = document.getElementById("statusTitle");
-    const statusText = document.getElementById("statusText");
-    const statusDot = document.getElementById("statusDot");
-    const ctaBox = document.getElementById("ctaBox");
-    const confetti = document.getElementById("confetti");
+    { label: "NO PRIZE THIS TIME", kind:"lose", weight: 1 },
+    { label: "NO PRIZE THIS TIME", kind:"lose", weight: 1 }
+  ];
 
-    let spins = 0;
-    let angle = 0;
-    let isSpinning = false;
+  // Drawing
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const resultBox = document.getElementById("result");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultMsg = document.getElementById("resultMsg");
+  const ctaRow = document.getElementById("ctaRow");
+  const continueBtn = document.getElementById("continueBtn");
+  const spinAgainBtn = document.getElementById("spinAgainBtn");
 
-    document.getElementById("year").textContent = new Date().getFullYear();
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const r = Math.min(W,H)*0.45;
 
-    function setStatus(kind, title, text){
-      statusTitle.textContent = title;
-      statusText.textContent = text;
+  const colors = [
+    "#f59e0b", "#22c55e", "#60a5fa", "#ef4444", "#a78bfa", "#f97316",
+    "#34d399", "#fb7185"
+  ];
 
-      if(kind === "ready"){
-        statusDot.style.background = "rgba(255,255,255,.35)";
-      } else if(kind === "progress"){
-        statusDot.style.background = "rgba(41,211,255,.95)";
-      } else if(kind === "ok"){
-        statusDot.style.background = "rgba(60,255,181,.95)";
+  function drawWheel(angle=0){
+    ctx.clearRect(0,0,W,H);
+
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(angle);
+
+    const total = segments.length;
+    const arc = (Math.PI*2)/total;
+
+    for(let i=0;i<total;i++){
+      const start = i*arc;
+      const end = start + arc;
+
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,r,start,end);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(255,255,255,.35)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.rotate(start + arc/2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(10, 15, 25, .92)";
+      ctx.font = "800 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      wrapText(segments[i].label, r - 22, 0, 340, 30);
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0,0,120,0,Math.PI*2);
+    ctx.fillStyle = "rgba(0,0,0,.25)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.2)";
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function wrapText(text, x, y, maxWidth, lineHeight){
+    const words = text.split(" ");
+    let line = "";
+    let yy = y;
+    for(let n=0; n<words.length; n++){
+      const testLine = line + words[n] + " ";
+      const metrics = ctx.measureText(testLine);
+      if(metrics.width > maxWidth && n > 0){
+        ctx.fillText(line.trim(), x, yy);
+        line = words[n] + " ";
+        yy += lineHeight;
       } else {
-        statusDot.style.background = "rgba(255,77,109,.95)";
+        line = testLine;
       }
     }
+    ctx.fillText(line.trim(), x, yy);
+  }
 
-    function updateCenter(){
-      const next = Math.min(spins + 1, REQUIRED_SPINS);
-      if(spins < REQUIRED_SPINS){
-        spinCountText.textContent = `Spin ${next} of ${REQUIRED_SPINS}`;
-        hintText.textContent = spins === 0 ? "Tap Spin to begin" : "One more spin to check status";
-      } else {
-        spinCountText.textContent = "Completed";
-        hintText.textContent = "You may proceed";
-      }
+  function weightedPick(items){
+    const sum = items.reduce((a,b)=>a+b.weight,0);
+    let rnd = Math.random() * sum;
+    for(const it of items){
+      rnd -= it.weight;
+      if(rnd <= 0) return it;
     }
+    return items[items.length-1];
+  }
 
-    // Simple celebratory sound (no external file)
-    function playCelebration(){
-      try{
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const now = ctx.currentTime;
+  let spinning = false;
+  let currentAngle = 0;
 
-        const o1 = ctx.createOscillator();
-        const g1 = ctx.createGain();
-        o1.type = "sine";
-        o1.frequency.setValueAtTime(660, now);
-        o1.frequency.exponentialRampToValueAtTime(990, now + 0.18);
-        g1.gain.setValueAtTime(0.0001, now);
-        g1.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
-        g1.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-        o1.connect(g1).connect(ctx.destination);
-        o1.start(now);
-        o1.stop(now + 0.30);
-
-        const o2 = ctx.createOscillator();
-        const g2 = ctx.createGain();
-        o2.type = "triangle";
-        o2.frequency.setValueAtTime(440, now + 0.05);
-        o2.frequency.exponentialRampToValueAtTime(740, now + 0.22);
-        g2.gain.setValueAtTime(0.0001, now + 0.05);
-        g2.gain.exponentialRampToValueAtTime(0.18, now + 0.07);
-        g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
-        o2.connect(g2).connect(ctx.destination);
-        o2.start(now + 0.05);
-        o2.stop(now + 0.34);
-      } catch(e){
-        // ignore if audio blocked
-      }
-    }
-
-    function launchConfetti(){
-      confetti.style.display = "block";
-      confetti.innerHTML = "";
-      const pieces = 28;
-      for(let i=0;i<pieces;i++){
-        const p = document.createElement("i");
-        p.style.left = Math.random()*100 + "%";
-        p.style.animationDelay = (Math.random()*0.15) + "s";
-        p.style.transform = `translateY(0) rotate(${Math.random()*120}deg)`;
-        // random bright-ish color via HSL
-        const hue = Math.floor(Math.random()*360);
-        p.style.background = `hsl(${hue} 95% 60%)`;
-        p.style.width = (6 + Math.random()*8) + "px";
-        p.style.height = (10 + Math.random()*10) + "px";
-        confetti.appendChild(p);
-      }
-      setTimeout(()=>{ confetti.style.display="none"; }, 1400);
-    }
-
-    function buildRedirectUrl(){
-      if(!PASS_THROUGH_QUERY) return CPA_URL;
-      const q = window.location.search || "";
-      if(!q) return CPA_URL;
-      // append with proper separator
-      const sep = CPA_URL.includes("?") ? "&" : "?";
-      return CPA_URL + sep + q.replace(/^\?/, "");
-    }
-
-    function showCTA(){
-      ctaBox.style.display = "block";
-      launchConfetti();
-      playCelebration();
-      setStatus("ok", "Status: Opportunity unlocked", "Congratulations! You may be eligible to proceed.");
-    }
-
-    function doSpin(){
-      if(isSpinning) return;
-      if(spins >= REQUIRED_SPINS) return;
-
-      isSpinning = true;
-      spinBtn.disabled = true;
-      resetBtn.disabled = true;
-
-      setStatus("progress", "Status: Checking...", "Spinning to check reward status. Please wait.");
-
-      // Random spin power; keep it non-deterministic but not implying a “win”
-      const extraTurns = 5 + Math.floor(Math.random()*3); // 5-7 full turns
-      const slice = 360 / 8;
-      const randomOffset = Math.floor(Math.random()*8) * slice + Math.random() * (slice * 0.35);
-
-      angle = angle + extraTurns*360 + randomOffset;
-
-      wheel.style.transform = `rotate(${angle}deg)`;
-
-      // when transition ends
-      setTimeout(()=>{
-        spins += 1;
-        updateCenter();
-
-        if(spins < REQUIRED_SPINS){
-          setStatus("ready", "Status: One more step", "Spin again to complete the eligibility check.");
-          spinBtn.disabled = false;
-          resetBtn.disabled = false;
-          isSpinning = false;
-        } else {
-          // Completion
-          hintText.textContent = "Eligibility step unlocked";
-          showCTA();
-          resetBtn.disabled = false;
-          isSpinning = false;
-        }
-      }, 4300);
-    }
-
-    function resetAll(){
-      spins = 0;
-      angle = 0;
-      isSpinning = false;
-      wheel.style.transition = "none";
-      wheel.style.transform = "rotate(0deg)";
-      // force reflow then restore transition
-      void wheel.offsetWidth;
-      wheel.style.transition = "transform 4.2s cubic-bezier(.12,.72,.10,1)";
-
-      ctaBox.style.display = "none";
-      spinBtn.disabled = false;
-      resetBtn.disabled = true;
-
-      setStatus("ready", "Status: Ready", "No claim of guaranteed winnings. This is an opportunity check.");
-      updateCenter();
-    }
-
-    spinBtn.addEventListener("click", doSpin);
-    resetBtn.addEventListener("click", resetAll);
-
-    continueBtn.addEventListener("click", ()=>{
-      // Safe redirect
-      window.location.href = buildRedirectUrl();
+  function buildSmartlink(){
+    const u = new URL(SMARTLINK, window.location.origin);
+    const passthrough = ["subid","sub_id","clickid","cid","utm_source","utm_campaign","utm_medium","utm_content"];
+    const here = new URL(window.location.href);
+    passthrough.forEach(k=>{
+      const v = here.searchParams.get(k);
+      if(v && !u.searchParams.has(k)) u.searchParams.set(k, v);
     });
+    return u.toString();
+  }
 
-    updateCenter();
+  function showResult(seg){
+    resultBox.classList.add("show");
+    ctaRow.style.display = "flex";
+    continueBtn.href = buildSmartlink();
 
-    /***********************
-     * Modal content
-     ***********************/
-    const modal = document.getElementById("modal");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalBody = document.getElementById("modalBody");
+    resultTitle.textContent =
+      seg.kind === "win"  ? "🎉 Congratulations!" :
+      seg.kind === "luck" ? "🍀 Good Luck!" :
+                            "😔 Try Again";
 
-    function openModal(type){
-      let title = "Info";
-      let body = "";
-      if(type === "terms"){
-        title = "Terms";
-        body = `
-          <p><b>Eligibility & Availability:</b> Participation does not guarantee a reward. Availability may vary by location and other factors.</p>
-          <p><b>No guaranteed outcome:</b> This page provides a reward opportunity / eligibility check experience. Results may vary.</p>
-          <p><b>Age:</b> You must be 18+ to continue.</p>
-        `;
-      } else if(type === "privacy"){
-        title = "Privacy";
-        body = `
-          <p>We may use standard analytics to improve the experience. If you proceed, you may be redirected to a third-party page that has its own privacy practices.</p>
-          <p>We do not sell personal data from this page. Please review the destination page’s privacy notice.</p>
-        `;
+    resultMsg.textContent = seg.label + ". Tap Continue to proceed.";
+  }
+
+  function spin(){
+    if(spinning) return;
+
+    if(!SMARTLINK || SMARTLINK === "YOUR_SMARTLINK_HERE"){
+      alert('Please set your Monetizer Smartlink: SMARTLINK = "..."');
+      return;
+    }
+
+    spinning = true;
+    spinBtn.disabled = true;
+    resetBtn.disabled = true;
+    resultBox.classList.remove("show");
+    ctaRow.style.display = "none";
+
+    const chosen = weightedPick(segments);
+    const idx = segments.indexOf(chosen);
+
+    const total = segments.length;
+    const arc = (Math.PI*2)/total;
+
+    // Pointer at top. Land chosen slice center at -90 degrees.
+    const sliceCenter = idx*arc + arc/2;
+    const target = (Math.PI*1.5) - sliceCenter;
+
+    const extraSpins = 6 + Math.random()*2; // 6-8 spins
+    const startAngle = currentAngle;
+    const endAngle = target + extraSpins*(Math.PI*2);
+
+    const duration = 4200 + Math.random()*800;
+    const startTime = performance.now();
+    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+    function frame(now){
+      const t = Math.min(1, (now - startTime)/duration);
+      const eased = easeOutCubic(t);
+      currentAngle = startAngle + (endAngle - startAngle)*eased;
+      drawWheel(currentAngle);
+
+      if(t < 1){
+        requestAnimationFrame(frame);
       } else {
-        title = "Contact";
-        body = `
-          <p>For support, please contact the site owner or the provider listed on the next step page.</p>
-          <p><b>Note:</b> This page is not affiliated with Facebook or any brand.</p>
-        `;
+        spinning = false;
+        resetBtn.disabled = false;
+        showResult(chosen);
       }
-      modalTitle.textContent = title;
-      modalBody.innerHTML = body;
-      modal.style.display = "block";
     }
-    function closeModal(){
-      modal.style.display = "none";
-    }
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
+    requestAnimationFrame(frame);
+  }
 
-  </script>
+  function reset(){
+    spinning = false;
+    spinBtn.disabled = false;
+    resetBtn.disabled = true;
+    resultBox.classList.remove("show");
+    ctaRow.style.display = "none";
+  }
+
+  spinBtn.addEventListener("click", spin);
+  resetBtn.addEventListener("click", reset);
+  spinAgainBtn.addEventListener("click", () => {
+    reset();
+    spin();
+  });
+
+  drawWheel(currentAngle);
+})();
+</script>
 </body>
 </html>
